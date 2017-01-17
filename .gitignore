@@ -1,0 +1,13 @@
+*.log
+*.dat
+*.exe
+*.cnf
+*.mod
+*.txt
+*.pyc
+*.pdf
+Error
+Output
+infile/
+outfile/
+jobfile/

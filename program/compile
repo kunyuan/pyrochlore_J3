@@ -1,0 +1,2 @@
+gfortran XXZ_std_V1.1.f90 -O3 -o XXZ
+

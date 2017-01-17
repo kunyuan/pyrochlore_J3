@@ -1,0 +1,14 @@
+3
+Pyrochlore 2 2 2 10.0 1.0 -0.05 -0.04 0.0 50 512 100 64 -381 512 0 4_10.0_1.0_-0.4_-0.5_0.0_0.cnf static_corr_1_0.txt mid_hs_sqa0_1_0.txt 
+ corr_k1_1_0.txt 
+ corr_k2_1_0.txt 
+ corr_k3_1_0.txt 
+ corr_k4_1_0.txt 
+ corr_k5_1_0.txt 
+ corr_k6_1_0.txt 
+ corr_k1_tau_1_0.txt 
+ corr_k2_tau_1_0.txt 
+ corr_k3_tau_1_0.txt 
+ corr_k4_tau_1_0.txt 
+ corr_k5_tau_1_0.txt 
+ corr_k6_tau_1_0.txt
