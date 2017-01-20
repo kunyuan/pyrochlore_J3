@@ -1873,7 +1873,7 @@
     Quan( 1)= potential_energy()       !! Beta*potential energy
     Quan( 2)= kink_number(TotalKinks)  !! Beta*kinetic energy
     Quan( 3)= (Quan(1)-Quan(2))/Vol    !! Beta*Energy/Vol
-    Quan( 4)= Quan(1)**2.d0/Vol        !! Potential Energy^2/Vol/T^2, heat capacity
+    Quan( 4)= Quan(1)**2.d0        !! Potential Energy^2/Vol/T^2, heat capacity
     Quan( 5)= (WR(1))**2.d0            !! Winding on x
     Quan( 6)= (WR(2))**2.d0            !! Winding on y
     if(Dim==3) then
@@ -1889,11 +1889,11 @@
     Quan(13)= Quan(12)**2              !! staggered M^4
     Quan(14)= Quan(13)*Vol             !! Spatial Susceptibility 
     call SubM_ZeroFreq()  ! Uniform Magnetization
-    Quan(15)= sum(SubM**2)*Beta/4.0        !! Uniform Magnetization 
+    Quan(15)= sum(SubM**2)/4.0        !! Uniform Magnetization 
     Quan(16)= Quan(15)**2              !! Uniform M^4
-    Quan(17)= sum(SubM_Stag**2)*Beta/4.0   !! Staggered Magnetization
+    Quan(17)= sum(SubM_Stag**2)/4.0   !! Staggered Magnetization
     Quan(18)= Quan(19)**2    !! may be not right
-    Quan(19)= SubM(1)
+    Quan(19)= (abs(SubM(1))+abs(SubM(2))+abs(SubM(3))+abs(SubM(4)))/4.0
     call SubM_Eq()   ! Equal time magnetization
     Quan(20)= sum(SubM**2)*Beta/4.0        !! Uniform Magnetization 
     Quan(21)= Quan(19)**2              !! Uniform M^4
@@ -1925,8 +1925,8 @@
     else
       Ave(NObs_b+1)=0
     endif
-    Ave(NObs_b+2)=Ave(4)-Ave(1)**2/Vol
-    Ave(NObs_b+3)=Ave(4)-Ave(1)**2/Vol
+    Ave(NObs_b+2)=(Ave(4)-Ave(1)**2)/Vol
+    Ave(NObs_b+3)=(Ave(15)-Ave(19)**2)*Vol*Beta
     Ave(NObs_b+4)=1.0-Ave(10)/Ave( 9)**2/3.0
     Ave(NObs_b+5)=1.0-Ave(13)/Ave(12)**2/3.0
     Ave(NObs_b+6)=1.0-Ave(18)/Ave(17)**2/3.0
@@ -1940,8 +1940,8 @@
             Obs(NObs_b+1,k)=0.0
         endif
     enddo
-    Obs(NObs_b+2,:)=Obs(4,:)-Obs(1,:)**2/Vol
-    Obs(NObs_b+3,:)=Obs(4,:)-Obs(1,:)**2/Vol
+    Obs(NObs_b+2,:)=(Obs(4,:)-Obs(1,:)**2)/Vol
+    Obs(NObs_b+3,:)=(Obs(15,:)-Obs(19,:)**2)*Vol*Beta
     Obs(NObs_b+4,:)=1.0-Obs(10,:)/Obs( 9,:)**2/3.0
     Obs(NObs_b+5,:)=1.0-Obs(13,:)/Obs(12,:)**2/3.0
     Obs(NObs_b+6,:)=1.0-Obs(18,:)/Obs(17,:)**2/3.0

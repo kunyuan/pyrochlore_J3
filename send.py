@@ -14,7 +14,7 @@ filelist=os.listdir(sourcedir)
 sourcename=[elem for elem in filelist if elem[0:3]=="XXZ" and elem[-3:]=="f90"]
 sourcename.sort()
 sourcename=sourcename[-1]
-os.system("ifort "+sourcedir+"/"+sourcename+" -O3 -o "+homedir+"/"+execute)
+os.system("gfortran "+sourcedir+"/"+sourcename+" -O3 -o "+homedir+"/"+execute)
 infilepath=homedir+"/infile"
 outfilepath=homedir+"/outfile"
 jobfilepath=homedir+"/jobfile"
