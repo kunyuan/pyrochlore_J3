@@ -1894,6 +1894,7 @@
     Quan(17)= sum(SubM_Stag**2)/4.0   !! Staggered Magnetization
     Quan(18)= Quan(19)**2    !! may be not right
     Quan(19)= (abs(SubM(1))+abs(SubM(2))+abs(SubM(3))+abs(SubM(4)))/4.0
+    print *, SubM
     call SubM_Eq()   ! Equal time magnetization
     Quan(20)= sum(SubM**2)*Beta/4.0        !! Uniform Magnetization 
     Quan(21)= Quan(19)**2              !! Uniform M^4
@@ -2058,7 +2059,7 @@
     SubM=0.0
     SubM_Stag=0.0
     do Vertex = 1, Vol
-      typ=mod(Vertex,4)
+      typ=mod(Vertex,4)+1
       Sz=SegmentState(Vertex,1)
       SubM(typ)=SubM(typ)+Sz
       SubM_Stag(typ)=SubM_Stag(typ)+Sz*get_Sign(Vertex)
@@ -2077,7 +2078,7 @@
     SubM=0.0
     SubM_Stag=0.0
     do Vertex = 1, Vol
-      typ=mod(Vertex,4)
+      typ=mod(Vertex,4)+1
       Sz=0.0
       BeginSite=1
       EndSite=NextSite(Vertex,BeginSite)
