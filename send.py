@@ -1,8 +1,8 @@
 #!/usr/bin/python
 import random
 import os, sys
-# IsCluster=True
-IsCluster=False
+IsCluster=True
+# IsCluster=False
 sourcedir="./program/"
 execute="XXZ.exe"
 Dim = 3
