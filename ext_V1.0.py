@@ -4,7 +4,7 @@ import os
 FileName="./pyrochlo.dat"
 Head="pyrochlo"
 Parameters=[1,4,5,6,7]
-DataRank={15:"M2", 25:"C"}
+DataRank={3:"E", 19:"M", 26:"chi", 25:"C"}
 #DataRank={22:"Spatial_Sus",23:"Total_Sus",24:"Corr"}
 #DataRank={10:"VBS",11:"Neel",27:"Q_VBS",28:"Q_Neel"}
 
