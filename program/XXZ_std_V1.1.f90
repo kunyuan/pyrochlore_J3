@@ -249,49 +249,49 @@
     Comp = 1.0/beta
 
     do i = 1, Nk
-	read *, komegafiles(i)
+      read *, komegafiles(i)
     enddo
     do i = 1, Nk
-	read *, ktaufiles(i)
+      read *, ktaufiles(i)
     enddo
     print *, statfile, midfile, komegafiles(1)
 
     !!!!!!Treatments for lattices with multiple sublattices!!!!!!!!!!
     if(LatticeName=='Pyrochlore') then
-	NSub = 4
-	nnb = 2*Dim
-	totnb = 12
+      NSub = 4
+      nnb = 2*Dim
+      totnb = 12
     elseif(LatticeName=='Cubic') then
-	NSub = 1
-	nnb = 2*Dim
+      NSub = 1
+      nnb = 2*Dim
     elseif(LatticeName=='Triangular') then
-	NSub = 1
-	nnb = 6
+      NSub = 1
+      nnb = 6
     endif
     if(LatticeName=='Pyrochlore' .and. Dim/=3) then
-	print *,"Pyrochlore on ", Dim, "dimension does not exist!"
-	stop
+      print *,"Pyrochlore on ", Dim, "dimension does not exist!"
+      stop
     endif
     if(LatticeName=='Cubic' .and. Dim/=3 .and. Dim/=2) then
-	print *,"Cubic on ", Dim, "dimension does not exist!"
-	stop
+      print *,"Cubic on ", Dim, "dimension does not exist!"
+      stop
     endif
     if(LatticeName=='Triangular' .and. Dim/=2) then
-	print *,"Triangular on ", Dim, "dimension does not exist!"
-	stop
+      print *,"Triangular on ", Dim, "dimension does not exist!"
+      stop
     endif
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     MxV = 1 
     do i = 1, Dim
-	MxV = MxV*MxL
+      MxV = MxV*MxL
     enddo
 
     MxV = MxV*NSub
 
     Vol=1
     do i = 1, Dim
-	Vol = Vol*L(i)
+      Vol = Vol*L(i)
     enddo
     Vol = Vol*NSub
 
@@ -552,27 +552,27 @@
 
     allocate(Momentum(1:Nk, 1:Dim))
     if(Dim==3) then
-	Momentum(1, :) = (/0.d0, 0.d0, 0.d0/)
-	Momentum(2, :) = (/0.d0, 0.d0, 2.d0*Pi/)
+        Momentum(1, :) = (/0.d0, 0.d0, 0.d0/)
+        Momentum(2, :) = (/0.d0, 0.d0, 2.d0*Pi/)
         Momentum(3, :) = (/0.d0, 0.d0, 2.d0*Pi*(L(3)-1)/L(3)/)
         Momentum(4, :) = (/0.d0, 0.d0, 2.d0*Pi*(L(3)-2)/L(3)/)
-	Momentum(5, :) = (/2.d0*Pi/L(1), 2.d0*Pi/L(2), 2.d0*Pi/)
-	Momentum(6, :) = (/Pi, Pi, Pi/)
+        Momentum(5, :) = (/2.d0*Pi/L(1), 2.d0*Pi/L(2), 2.d0*Pi/)
+        Momentum(6, :) = (/Pi, Pi, Pi/)
 
-	allocate(ReKPhase(1:Nk, 1:Vol))
-	allocate(ImKPhase(1:Nk, 1:Vol))
+        allocate(ReKPhase(1:Nk, 1:Vol))
+        allocate(ImKPhase(1:Nk, 1:Vol))
 
 
-	do k = 1, Nk
-	    do i = 1, Vol
-		phase = 0.d0
-		do j = 1, Dim
-		    phase = phase + Momentum(k, j)*RealVector(i, j)
-		enddo
-		ReKPhase(k, i) = dcos(phase)
-		ImKPhase(k, i) = dsin(phase)
-	    enddo
-	enddo
+        do k = 1, Nk
+            do i = 1, Vol
+              phase = 0.d0
+              do j = 1, Dim
+                  phase = phase + Momentum(k, j)*RealVector(i, j)
+              enddo
+              ReKPhase(k, i) = dcos(phase)
+              ImKPhase(k, i) = dsin(phase)
+            enddo
+        enddo
     endif
 
     allocate(Quan(1:NObs_b))
