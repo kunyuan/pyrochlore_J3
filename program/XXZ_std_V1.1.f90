@@ -76,8 +76,8 @@
     integer            :: Vol                                 ! actual volumn
     double precision   :: Norm                                ! normalization factor (1/Vol)
 
-    double precision   :: rmuv,radv                           ! auxillary variables to draw a random vertex
-    double precision   :: rmue,rade                           ! auxillary variables to draw a random neighboring edge
+    double precision   :: WormStep
+    logical            :: present
     !-----------------------------------------------------------------
 
     !-- parameters and variables -------------------------------------
@@ -220,6 +220,17 @@
     double precision,parameter  :: P1=1.0/4
     double precision,parameter  :: P2=P1+1.0/4
     double precision,parameter  :: P3=P2+1.0/4
+
+    !-------- measurement -------------------------------------------
+    INTEGER, PARAMETER :: prnt_max=100000
+    INTEGER :: prntout
+    DOUBLE PRECISION :: amin, amax, tmin, tmax 
+    DOUBLE PRECISION :: PatRatio_prn(prnt_max)
+    DOUBLE PRECISION :: Sq_prn(prnt_max)
+    DOUBLE PRECISION :: rs_prn(prnt_max)
+    DOUBLE PRECISION :: E_prn(prnt_max) 
+    DOUBLE PRECISION :: N_prn(prnt_max)     
+    DOUBLE PRECISION :: Sqe_prn(prnt_max)
   END MODULE my_vrbls
 
   !=====Main routine for bond percolation on square lattice ==========
@@ -431,8 +442,8 @@
     double precision :: vec(1:Dim)
     double precision :: phase
     
-
-    Number=0
+    WormStep=0.0
+    Number=0.0
     !Comp=1/(beta/<n>)^2/<n>=<n>/beta^2 
     !<n> is the average kink number per site
     ! <n>=beta*2Vol*<SxSx+SySy>/Vol~beta
@@ -457,9 +468,9 @@
           enddo
         enddo
         close(9)
-	EnergyCheck = potential_energy()
-	call winding_number
-	print *, EnergyCheck, WindR, WindT 
+        EnergyCheck = potential_energy()
+        call winding_number
+        print *, EnergyCheck, WindR, WindT 
     else
         IsLoad = 0
         print *, "No load file, isload=0!!"
@@ -519,11 +530,11 @@
     !endif
 
     if(Dim==2) then
-	write(6,40) L(1),L(2)
-	40 format(' Simulation is on L=',i6,'*',i6,2x,'square lattice.')
+      write(6,40) L(1),L(2)
+      40 format(' Simulation is on L=',i6,'*',i6,2x,'square lattice.')
     else if(Dim==3) then
-	write(6,46) L(1),L(2),L(3),LatticeName
-	46 format(' Simulation is on L=',i6,'*',i6,'*',i6,2x,a10,1x,'lattice.')
+      write(6,46) L(1),L(2),L(3),LatticeName
+      46 format(' Simulation is on L=',i6,'*',i6,'*',i6,2x,a10,1x,'lattice.')
     endif
 
     write(6,45) Beta
@@ -598,42 +609,40 @@
         integer :: site, ver
         double precision :: x
 
-        do i=1,Nswee
-            dWR(:)=0
-            dWt=0
-	    !print *, Number, "create_worm"
+        flag=.false.
+        do while(.true.)
+          dWR(:)=0
+          dWt=0
+          Number=Number+1
+          IF(.not.flag) THEN
             call create_worm(flag)
-            if(flag) then
-                do while(flag)
-                    Number=Number+1
-                    call choose_Ira()
-                    x=rn()
-                    if(x<P1) then
-			!print *, Number, "move_worm"
-                        call move_worm()
-                    else if(x<P2) then
-			!print *, Number, "create_kink"
-                        call create_kink()
-                    else if(x<P3) then
-			!print *, Number, "delete_kink"
-                        call delete_kink()
-                    else
-			!print *, Number, "remove_worm"
-                        call annihilate_worm(flag)
-                    endif
-                enddo
+          ELSE 
+            call choose_Ira()
+            x=rn()
+            if(x<P1) then
+                call move_worm()
+            else if(x<P2) then
+                call create_kink()
+            else if(x<P3) then
+                call delete_kink()
+            else
+                call annihilate_worm(flag)
             endif
-	    do k = 1, Dim
-		if(LatticeName=="Pyrochlore") then
-		    WR(k)=WR(k)+(dWR(k)/2.0/L(k))
-		else
-		    WR(k)=WR(k)+(dWR(k)/L(k))
-		endif
-	    enddo
-            Wt=Wt+dWt
-	    !print *, WR(:)
+          ENDIF
+          do k = 1, Dim
+            if(LatticeName=="Pyrochlore") then
+                WR(k)=WR(k)+(dWR(k)/2.0/L(k))
+            else
+                WR(k)=WR(k)+(dWR(k)/L(k))
+            endif
+          enddo
+          Wt=Wt+dWt
+          !print *, WR(:)
+          
         enddo
-        return
+
+        do i=1,Nswee
+      return
     END SUBROUTINE monte
 
     logical FUNCTION is_in_same_segment(IraVertex,IraSite,MashaVertex,MashaSite)
@@ -2163,6 +2172,27 @@
       write(18,*) str
       error_print=1
   end FUNCTION
+!********************************************************
+  subroutine ERSTAT(a,n,amax,tmax,amin,tmin)
+!     Analizing 3/4 print-out
+      
+    double precision :: a, amax, tmax, amin, tmin, aa
+    integer n, i
+    dimension a(n)
+    
+    amax=-1.d200; amin=1.d200
+            
+    DO i=n/4+1, n;  aa=a(i)
+        if (aa > amax) then
+          amax=aa; tmax=i
+        end if
+        if (aa < amin) then
+          amin=aa; tmin=i
+        end if
+    END DO
+            
+    tmax=tmax/n; tmin=tmin/n
+  end subroutine ERSTAT
 
   !===================================================================
   !===============Shift register random number generator =============
