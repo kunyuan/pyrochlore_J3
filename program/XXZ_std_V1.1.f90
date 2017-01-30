@@ -178,6 +178,7 @@
     double precision       :: ExternalField
     double precision       :: beta                             ! common variable 
     double precision       :: Number
+    integer                :: iNumber
     double precision       :: Const
                                                
     double precision,allocatable :: KinkTime(:,:)      !Time point of every kink
@@ -364,62 +365,90 @@
     call t_elapse(1)         ! '1' for set up
 
     call winding_number()
-    print *, "wingding done!"
+    print *, "winding done!"
     WR(:)=WindR(:)
     Wt=WindT
 
     !--- Equilibration -----------------------------------------------
     if(IsLoad/=1) then
-      do itoss = 1, Ntoss
-      print *, "itoss ", itoss
-	    do isamp = 1, Nsamp
-	      call monte
-	      !call check_config
-	    enddo
-        enddo
+      p_ther=Ntoss
+    else
+      p_ther=0
     endif
-    call t_elapse(2)         ! '2' for equilibration
-    print *, "thermalization done!"
-    call check_config
+
+    !call t_elapse(2)         ! '2' for equilibration
+    !print *, "thermalization done!"
+    !call check_config
 
     !--- Simulation --------------------------------------------------
-    if(IsLoad==1) then
-        open(18,file=file_config2,access="append")
-    else
-        open(18,file=file_config2)
-    endif
         
     print *, "start simulation..."
-    do iblck = 1, NBlck
-      do isamp = 1, Nsamp
-        call monte
-	!call check_config
-        call measure
-	!if(mod(isamp,NmeasCorr)==0)  call measure_Corr
-        call coll_data(iblck)
-      enddo
-      print *, "simulation: Block", iblck, " done!"
-      call norm_Nsamp(iblck)
-      call t_elapse(-1)      ! '-1' just for trace the time
-      call midwrite2file(iblck)
+    present=.false.
+    dWR(:)=0
+    dWt=0
+    Number=0.0
 
-      if(mod(iblck, NSave)==0) then
-          !call write2file_corr(iblck)
-          !call midwrite2file(iblck)
+    do while(.true.)
+      Number=Number+1.0
+      iNumber=mod(Number,1.e9)
+      call monte
+
+      IF(iNumber>p_ther) then  
+        p_ther=0
+        if(mod(iNumber,p_prn)==0) then
+          do k = 1, Dim
+            if(LatticeName=="Pyrochlore") then
+                WR(k)=dWR(k)/2/L(k)
+            else
+                WR(k)=dWR(k)/L(k)
+            endif
+          enddo
+          Wt=dWt
+        IF(mod(iNumber,p_mes)==0) call measure(iNumber); 
+        IF(mod(iNumber,p_prn)==0) call printing(iNumber)
+        IF(mod(iNumber,p_wr)==0)  then 
+          Print*, iNumber, "*1.e9 steps"
+          Print*, '!!!!! WRITE !!!!!'
           call saveconfig
           EnergyCheck = potential_energy()
           call winding_number
           print *, EnergyCheck, WindR, WindT 
-          print*, iblck,"save data and configuration"
+          print*, "save data and configuration"
+          PRINT*, '!!!!! DONE !!!!!';
+          call t_elapse(-1)      ! '-1' just for trace the time
+          !call check_config
+        endif
       endif
     enddo
-    close(18)
 
     call t_elapse(3)         ! '3' for markov-chain, including simulation and measurement
+    !do iblck = 1, NBlck
+      !do isamp = 1, Nsamp
+        !call monte
+	!call check_config
+        !call measure
+	!if(mod(isamp,NmeasCorr)==0)  call measure_Corr
+        !call coll_data(iblck)
+      !enddo
+      !print *, "simulation: Block", iblck, " done!"
+      !call norm_Nsamp(iblck)
+      !call t_elapse(-1)      ! '-1' just for trace the time
+      !call midwrite2file(iblck)
+
+      !if(mod(iblck, NSave)==0) then
+          !call write2file_corr(iblck)
+          !call midwrite2file(iblck)
+          !call saveconfig
+          !EnergyCheck = potential_energy()
+          !call winding_number
+          !print *, EnergyCheck, WindR, WindT 
+          !print*, iblck,"save data and configuration"
+      !endif
+    !enddo
 
     !--- Statistics --------------------------------------------------
-    call stat_alan
-    call write2file
+    !call stat_alan
+    !call write2file
     call saveconfig
     EnergyCheck = potential_energy()
     call winding_number
@@ -442,8 +471,6 @@
     double precision :: vec(1:Dim)
     double precision :: phase
     
-    WormStep=0.0
-    Number=0.0
     !Comp=1/(beta/<n>)^2/<n>=<n>/beta^2 
     !<n> is the average kink number per site
     ! <n>=beta*2Vol*<SxSx+SySy>/Vol~beta
@@ -604,44 +631,26 @@
   !! THIS IS PROJECT-DEPENDENT 
   SUBROUTINE monte
         implicit none
-        integer :: i,j,k
-        logical :: flag
-        integer :: site, ver
         double precision :: x
 
-        flag=.false.
-        do while(.true.)
-          dWR(:)=0
-          dWt=0
-          Number=Number+1
-          IF(.not.flag) THEN
-            call create_worm(flag)
-          ELSE 
-            call choose_Ira()
-            x=rn()
-            if(x<P1) then
-                call move_worm()
-            else if(x<P2) then
-                call create_kink()
-            else if(x<P3) then
-                call delete_kink()
-            else
-                call annihilate_worm(flag)
-            endif
-          ENDIF
-          do k = 1, Dim
-            if(LatticeName=="Pyrochlore") then
-                WR(k)=WR(k)+(dWR(k)/2.0/L(k))
-            else
-                WR(k)=WR(k)+(dWR(k)/L(k))
-            endif
-          enddo
-          Wt=Wt+dWt
+        IF(.not.present) THEN
+          call create_worm(present)
+        ELSE 
+          call choose_Ira()
+          x=rn()
+          if(x<P1) then
+              call move_worm()
+          else if(x<P2) then
+              call create_kink()
+          else if(x<P3) then
+              call delete_kink()
+          else
+              call annihilate_worm(present)
+          endif
+        ENDIF
           !print *, WR(:)
           
         enddo
-
-        do i=1,Nswee
       return
     END SUBROUTINE monte
 
