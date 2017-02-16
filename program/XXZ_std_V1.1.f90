@@ -226,7 +226,6 @@
     INTEGER, PARAMETER :: prnt_max=100000
     INTEGER :: prntout
     DOUBLE PRECISION :: amin, amax, tmin, tmax 
-    DOUBLE PRECISION :: PatRatio_prn(prnt_max)
     DOUBLE PRECISION :: Sq_prn(prnt_max)
     DOUBLE PRECISION :: rs_prn(prnt_max)
     DOUBLE PRECISION :: E_prn(prnt_max) 
@@ -395,7 +394,7 @@
 
       IF(iNumber>p_ther) then  
         p_ther=0
-        if(mod(iNumber,p_prn)==0) then
+        if(mod(iNumber,p_mes)==0) then
           do k = 1, Dim
             if(LatticeName=="Pyrochlore") then
                 WR(k)=dWR(k)/2/L(k)
@@ -404,20 +403,20 @@
             endif
           enddo
           Wt=dWt
-        IF(mod(iNumber,p_mes)==0) call measure(iNumber); 
-        IF(mod(iNumber,p_prn)==0) call printing(iNumber)
-        IF(mod(iNumber,p_wr)==0)  then 
-          Print*, iNumber, "*1.e9 steps"
-          Print*, '!!!!! WRITE !!!!!'
-          call saveconfig
-          EnergyCheck = potential_energy()
-          call winding_number
-          print *, EnergyCheck, WindR, WindT 
-          print*, "save data and configuration"
-          PRINT*, '!!!!! DONE !!!!!';
-          call t_elapse(-1)      ! '-1' just for trace the time
-          !call check_config
-        endif
+          call measure(iNumber)
+          IF(mod(iNumber,p_prn)==0) call printing(iNumber); 
+          IF(mod(iNumber,p_wr)==0)  then 
+            Print*, iNumber, "*1.e9 steps"
+            Print*, '!!!!! WRITE !!!!!'
+            call saveconfig
+            EnergyCheck = potential_energy()
+            call winding_number
+            print *, EnergyCheck, WindR, WindT 
+            print*, "save data and configuration"
+            PRINT*, '!!!!! DONE !!!!!';
+            call t_elapse(-1)      ! '-1' just for trace the time
+            !call check_config
+          endif
       endif
     enddo
 
@@ -1301,60 +1300,61 @@
 
 
   !==============Measurement =========================================
-  SUBROUTINE measure
+  SUBROUTINE measure(iNumber)
     implicit none
-    integer :: i, j 
+    integer :: iNumber
+    integer :: i, j
     double precision :: TotalKinks, tmp, tot
     logical :: flag
 
     !--Observables definition ----------------------------------------
     !! THIS IS PROJECT-DEPENDENT 
-    flag = .true.
-    do i = 1, Dim
-      flag = flag .and. WR(i)==0
-    enddo
-    if(Wt==0 .and. flag) then
-        W0=1;W1=0
-    else
-        W0=0;W1=1
-    endif
+    !flag = .true.
+    !do i = 1, Dim
+      !flag = flag .and. WR(i)==0
+    !enddo
+    !if(Wt==0 .and. flag) then
+        !W0=1;W1=0
+    !else
+        !W0=0;W1=1
+    !endif
 
-    Quan( 1)= potential_energy()       !! Beta*potential energy
-    Quan( 2)= kink_number(TotalKinks)  !! Beta*kinetic energy
-    Quan( 3)= (Quan(1)-Quan(2))/Vol    !! Beta*Energy/Vol
-    Quan( 4)= Quan(1)**2.d0        !! Potential Energy^2/Vol/T^2, heat capacity
-    Quan( 5)= (WR(1))**2.d0            !! Winding on x
-    Quan( 6)= (WR(2))**2.d0            !! Winding on y
-    if(Dim==3) then
-      Quan( 7)= (WR(3))**2.d0            !! Winding on z
-    else
-      Quan( 7)= 0.d0            !! Winding on z
-    endif
-    Quan( 8)= sum((WR(:))**2.d0)/Beta/(1.d0*Dim) !! stiffness
-    Quan( 9)= (Wt)**2                  !! winding on tau==Magnetization
-    Quan(10)= Quan( 9)**2              !! M^4
-    Quan(11)= Quan(10)*Vol             !! Spatial Susceptibility 
-    Quan(12)= SM()**2                  !! Staggerd Magnetization 
-    Quan(13)= Quan(12)**2              !! staggered M^4
-    Quan(14)= Quan(13)*Vol             !! Spatial Susceptibility 
-    call SubM_ZeroFreq()  ! Uniform Magnetization
-    Quan(15)= sum(SubM**2)/4.0        !! Uniform Magnetization 
-    Quan(16)= Quan(15)**2              !! Uniform M^4
-    Quan(17)= sum(SubM_Stag**2)/4.0   !! Staggered Magnetization
-    Quan(18)= Quan(19)**2    !! may be not right
-    Quan(19)= (abs(SubM(1))+abs(SubM(2))+abs(SubM(3))+abs(SubM(4)))/4.0
-    call SubM_Eq()   ! Equal time magnetization
-    Quan(20)= sum(SubM**2)*Beta/4.0        !! Uniform Magnetization 
-    Quan(21)= Quan(19)**2              !! Uniform M^4
-    Quan(22)= sum(SubM_Stag**2)*Beta/4.0   !! Staggered Magnetization
-    Quan(23)= Quan(21)**2    !! may be not right
-    !Quan(15)= Correlator(1,1)
-    !Quan(16)= Correlator(1,2)
-    !Quan(17)= Correlator(1,Vol/2)
-    !Quan(20)= GetKOmegaCorr(2, 0)
-    !Quan(21)= GetKOmegaCorr(2, 1)
-    !Quan(22)= GetKOmegaCorr(2, 2)
-    !Quan(23)= GetKOmegaCorr(2, 512)
+    !Quan( 1)= potential_energy()       !! Beta*potential energy
+    !Quan( 2)= kink_number(TotalKinks)  !! Beta*kinetic energy
+    !Quan( 3)= (Quan(1)-Quan(2))/Vol    !! Beta*Energy/Vol
+    !Quan( 4)= Quan(1)**2.d0        !! Potential Energy^2/Vol/T^2, heat capacity
+    !Quan( 5)= (WR(1))**2.d0            !! Winding on x
+    !Quan( 6)= (WR(2))**2.d0            !! Winding on y
+    !if(Dim==3) then
+      !Quan( 7)= (WR(3))**2.d0            !! Winding on z
+    !else
+      !Quan( 7)= 0.d0            !! Winding on z
+    !endif
+    !Quan( 8)= sum((WR(:))**2.d0)/Beta/(1.d0*Dim) !! stiffness
+    !Quan( 9)= (Wt)**2                  !! winding on tau==Magnetization
+    !Quan(10)= Quan( 9)**2              !! M^4
+    !Quan(11)= Quan(10)*Vol             !! Spatial Susceptibility 
+    !Quan(12)= SM()**2                  !! Staggerd Magnetization 
+    !Quan(13)= Quan(12)**2              !! staggered M^4
+    !Quan(14)= Quan(13)*Vol             !! Spatial Susceptibility 
+    !call SubM_ZeroFreq()  ! Uniform Magnetization
+    !Quan(15)= sum(SubM**2)/4.0        !! Uniform Magnetization 
+    !Quan(16)= Quan(15)**2              !! Uniform M^4
+    !Quan(17)= sum(SubM_Stag**2)/4.0   !! Staggered Magnetization
+    !Quan(18)= Quan(19)**2    !! may be not right
+    !Quan(19)= (abs(SubM(1))+abs(SubM(2))+abs(SubM(3))+abs(SubM(4)))/4.0
+    !call SubM_Eq()   ! Equal time magnetization
+    !Quan(20)= sum(SubM**2)*Beta/4.0        !! Uniform Magnetization 
+    !Quan(21)= Quan(19)**2              !! Uniform M^4
+    !Quan(22)= sum(SubM_Stag**2)*Beta/4.0   !! Staggered Magnetization
+    !Quan(23)= Quan(21)**2    !! may be not right
+    !!Quan(15)= Correlator(1,1)
+    !!Quan(16)= Correlator(1,2)
+    !!Quan(17)= Correlator(1,Vol/2)
+    !!Quan(20)= GetKOmegaCorr(2, 0)
+    !!Quan(21)= GetKOmegaCorr(2, 1)
+    !!Quan(22)= GetKOmegaCorr(2, 2)
+    !!Quan(23)= GetKOmegaCorr(2, 512)
   END SUBROUTINE measure
 
   !==============Calculate composite observables =====================
@@ -2330,6 +2330,28 @@
   !*******************************************************************
   !            End of PROJECT-INDEPENDENT part 
   !*******************************************************************
+
+!********************************************************
+  subroutine ERSTAT(a,n,amax,tmax,amin,tmin)
+!     Analizing 3/4 print-out
+      
+    double precision :: a, amax, tmax, amin, tmin, aa
+    integer n, i
+    dimension a(n)
+    
+    amax=-1.d200; amin=1.d200
+            
+    DO i=n/4+1, n;  aa=a(i)
+        if (aa > amax) then
+          amax=aa; tmax=i
+        end if
+        if (aa < amin) then
+          amin=aa; tmin=i
+        end if
+    END DO
+            
+    tmax=tmax/n; tmin=tmin/n
+  end subroutine ERSTAT
 
 END PROGRAM main
 !====================================================================
