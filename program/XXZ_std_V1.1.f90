@@ -119,7 +119,7 @@
     !-- Observables --------------------------------------------------
     !! THIS IS PROJECT-DEPENDENT 
     integer, parameter :: NPhase = 100
-    integer, parameter :: NObs_b = 23                         ! #basic observables
+    integer, parameter :: NObs_b = 22                         ! #basic observables
     integer, parameter :: NObs_c = 7                          ! #composite observables
     integer, parameter :: NObs   = NObs_b+NObs_c              ! Total # observables
     !-----------------------------------------------------------------
@@ -1896,24 +1896,26 @@
     Quan( 9)= (Wt)**2                  !! winding on tau==Magnetization
     Quan(10)= Quan( 9)**2              !! M^4
     Quan(11)= Quan(10)*Vol             !! Spatial Susceptibility 
-    Quan(12)= SM()**2                  !! Staggerd Magnetization 
-    Quan(13)= Quan(12)**2              !! staggered M^4
-    Quan(14)= Quan(13)*Vol             !! Spatial Susceptibility 
+    !Quan(12)= SM()**2                  !! Staggerd Magnetization 
+    !Quan(13)= Quan(12)**2              !! staggered M^4
+    !Quan(14)= Quan(13)*Vol             !! Spatial Susceptibility 
     call SubM_ZeroFreq()  ! Uniform Magnetization
-    Quan(15)= sum(SubM**2)/4.0        !! Uniform Magnetization 
-    Quan(16)= Quan(15)**2              !! Uniform M^4
-    Quan(17)= sum(SubM_Stag**2)/4.0   !! Staggered Magnetization
-    Quan(18)= Quan(19)**2    !! may be not right
-    Quan(19)= (abs(SubM(1))+abs(SubM(2))+abs(SubM(3))+abs(SubM(4)))/4.0
+    Quan(12)= sum(SubM**2)/4.0        !! Uniform Magnetization 
+    Quan(13)= sum(SubM**4)/4.0              !! Uniform M^4
+    Quan(14)= (abs(SubM(1))+abs(SubM(2))+abs(SubM(3))+abs(SubM(4)))/4.0
+    Quan(15)= sum(SubM_Stag**2)/4.0   !! Staggered Magnetization
+    Quan(16)= sum(SubM_Stag**4)/4.0    !! may be not right
     call SubM_Eq()   ! Equal time magnetization
     !Quan(20)= sum(SubM**2)*Beta/4.0        !! Uniform Magnetization 
     !Quan(21)= Quan(19)**2              !! Uniform M^4
     !Quan(22)= sum(SubM_Stag**2)*Beta/4.0   !! Staggered Magnetization
     !Quan(23)= Quan(21)**2    !! may be not right
-    Quan(20)= AvgM        !! Uniform Magnetization 
-    Quan(21)= AvgM2              !! Uniform M^4
-    Quan(22)= AvgM4   !! Staggered Magnetization
-    Quan(23)= Quan(21)**2    !! may be not right
+    Quan(17)= AvgM        !! Uniform Magnetization 
+    Quan(18)= AvgM2              !! Uniform M^4
+    Quan(19)= AvgM4   !! Staggered Magnetization
+    Quan(20)= AvgM_Stag        !! Uniform Magnetization 
+    Quan(21)= AvgM2_Stag              !! Uniform M^4
+    Quan(22)= AvgM4_Stag   !! Staggered Magnetization
     !Quan(15)= Correlator(1,1)
     !Quan(16)= Correlator(1,2)
     !Quan(17)= Correlator(1,Vol/2)
@@ -1940,11 +1942,11 @@
     else
       Ave(NObs_b+1)=0
     endif
-    Ave(NObs_b+2)=(Ave(4)-Ave(1)**2)/Vol
-    Ave(NObs_b+3)=(Ave(15)-Ave(19)**2)*Vol*Beta
-    Ave(NObs_b+4)=1.0-Ave(10)/Ave( 9)**2/3.0
-    Ave(NObs_b+5)=1.0-Ave(13)/Ave(12)**2/3.0
-    Ave(NObs_b+6)=1.0-Ave(18)/Ave(17)**2/3.0
+    Ave(NObs_b+2)=(Ave(12)-Ave(14)**2)*Vol*Beta
+    Ave(NObs_b+3)=(Ave(18)-Ave(17)**2)*Vol
+    Ave(NObs_b+4)=1.0-Ave(13)/Ave(12)**2/3.0
+    Ave(NObs_b+5)=1.0-Ave(16)/Ave(15)**2/3.0
+    Ave(NObs_b+6)=1.0-Ave(19)/Ave(18)**2/3.0
     Ave(NObs_b+7)=1.0-Ave(22)/Ave(21)**2/3.0
 
     !-- Obs(j,k) series ----------------------------------------------
@@ -1955,11 +1957,11 @@
             Obs(NObs_b+1,k)=0.0
         endif
     enddo
-    Obs(NObs_b+2,:)=(Obs(4,:)-Obs(1,:)**2)/Vol
-    Obs(NObs_b+3,:)=(Obs(15,:)-Obs(19,:)**2)*Vol*Beta
-    Obs(NObs_b+4,:)=1.0-Obs(10,:)/Obs( 9,:)**2/3.0
-    Obs(NObs_b+5,:)=1.0-Obs(13,:)/Obs(12,:)**2/3.0
-    Obs(NObs_b+6,:)=1.0-Obs(18,:)/Obs(17,:)**2/3.0
+    Obs(NObs_b+2,:)=(Obs(12,:)-Obs(14,:)**2)*Vol*Beta
+    Obs(NObs_b+3,:)=(Obs(18,:)-Obs(17,:)**2)*Vol
+    Obs(NObs_b+4,:)=1.0-Obs(13,:)/Obs(12,:)**2/3.0
+    Obs(NObs_b+5,:)=1.0-Obs(16,:)/Obs(15,:)**2/3.0
+    Obs(NObs_b+6,:)=1.0-Obs(19,:)/Obs(18,:)**2/3.0
     Obs(NObs_b+7,:)=1.0-Obs(22,:)/Obs(21,:)**2/3.0
    return
   END SUBROUTINE cal_Obs_comp
@@ -2168,8 +2170,8 @@
       SubM(typ)=SubM(typ)+Sz
       SubM_Stag(typ)=SubM_Stag(typ)+Sz*get_Sign(Vertex)
     enddo
-    SubM=SubM/Vol/Beta*4.0
-    SubM_Stag=SubM_Stag/Vol/Beta*4.0
+    SubM=SubM/Vol/Beta*4.0/2.0
+    SubM_Stag=SubM_Stag/Vol/Beta*4.0/2.0
   end subroutine SubM_ZeroFreq
 
   double precision FUNCTION Correlator(Vertex1,Vertex2)
